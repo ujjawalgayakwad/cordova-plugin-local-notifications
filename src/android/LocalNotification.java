@@ -40,8 +40,11 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Build;
 import android.annotation.TargetApi;
+import android.os.Vibrator;
+import android.media.*;
 
 import de.appplant.cordova.plugin.notification.*;
+import de.appplant.cordova.plugin.notification.Options;
 
 /**
  * This plugin utilizes the Android AlarmManager in combination with StatusBar
@@ -113,7 +116,16 @@ public class LocalNotification extends CordovaPlugin {
                 }
             });
         }
-        
+
+        if (action.equalsIgnoreCase("stopVibrationAndSound")) {
+            cordova.getThreadPool().execute( new Runnable() {
+                public void run() {
+                    stopVibrationAndSound();
+                    command.success();
+                }
+            });
+        }
+
         if (action.equalsIgnoreCase("clear")) {
         	cordova.getThreadPool().execute( new Runnable() {
                 public void run() {
@@ -235,8 +247,8 @@ public class LocalNotification extends CordovaPlugin {
     	for(int i=0;i<notifications.length();i++){
     		arguments = notifications.optJSONObject(i);
     		arguments = asset.parseURIs(arguments);
-    		Options options      = new Options(context).parse(arguments);
-    		options.setInitDate();
+    		Options options      = new Options(LocalNotification.context).parse(arguments);
+    		options.getInitialDate();
         	nWrapper.schedule(options);
         	JSONArray fireData= new JSONArray().put(options.getJSONObject());
         	fireEvent("add", options.getId(),options.getJSON(), fireData);
@@ -289,7 +301,21 @@ public class LocalNotification extends CordovaPlugin {
           	fireEvent("cancel", id, "",data);
         }
     }
-    
+
+    /**
+     * Stop vibration and sound being played by alarm
+     */
+    public static void stopVibrationAndSound () {
+        Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        v.cancel();
+        if (Receiver.mMediaPlayer != null) {
+            if (Receiver.mMediaPlayer.isPlaying()) {
+                Receiver.mMediaPlayer.stop();
+            }
+            Receiver.mMediaPlayer.release();
+        }
+    }
+
     /**
      * Clear triggered notifications without cancel repeating.
      * @param args

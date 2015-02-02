@@ -142,6 +142,13 @@ public class Options {
     }
 
     /**
+     * Returns whether notification should launch screen automatically
+     */
+    public boolean getLaunchScreen () {
+        return options.optBoolean("launchScreen", false);
+    }
+
+    /**
      * Returns the path of the notification's sound file
      */
     public Uri getSound () {

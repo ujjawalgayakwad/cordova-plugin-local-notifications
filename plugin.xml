@@ -60,6 +60,17 @@
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <!--
+             * The activity AlarmScreen will launch when the ALARM sction is triggered
+             * while raising notification alarm.
+            -->
+            <activity android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale" android:label="@string/activity_name" android:launchMode="singleTop" android:name="AlarmScreen" android:screenOrientation="portrait" android:theme="@android:style/Theme.Black.NoTitleBar" android:windowSoftInputMode="adjustPan">
+	            <intent-filter>
+	                <action android:name="de.appplant.cordova.plugin.localnotification.ALARM" />
+	                <category android:name="android.intent.category.DEFAULT" />
+	            </intent-filter>
+            </activity>
+
+            <!--
              * The alarm receiver is triggered when a scheduled alarm is fired. This class
              * reads the information in the intent and displays this information in the
              * Android notification bar. The notification uses the default notification
@@ -95,6 +106,10 @@
 
         <config-file target="AndroidManifest.xml" parent="/manifest">
             <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+            <uses-permission android:name="android.permission.WAKE_LOCK" />
+    		<uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    		<uses-permission android:name="android.permission.VIBRATE" />
+    		<uses-permission android:name="android.permission.BLUETOOTH" />
         </config-file>
 
         <lib-file src="libs/android/android-support-v4.jar" />

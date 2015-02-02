@@ -27,14 +27,23 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.KeyguardManager;
+import android.app.KeyguardManager.KeyguardLock;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Vibrator;
+import android.media.*;
+import android.net.Uri;
+import android.util.Log;
 
 import android.support.v4.app.NotificationCompat.Builder;
 
 import de.appplant.cordova.plugin.notification.*;
+import de.appplant.cordova.plugin.notification.Options;
 
 /**
  * The alarm receiver is triggered when a scheduled alarm is fired. This class
@@ -45,6 +54,8 @@ import de.appplant.cordova.plugin.notification.*;
 public class Receiver extends BroadcastReceiver {
 
     public static final String OPTIONS = "LOCAL_NOTIFICATION_OPTIONS";
+    public static MediaPlayer mMediaPlayer;
+    private static final String TAG = "clarkActivity";
 
     private Options options;
 
@@ -63,7 +74,9 @@ public class Receiver extends BroadcastReceiver {
             return;
         }
         this.options = options;
-        
+
+        boolean launchScreen = options.getLaunchScreen();
+
     	NotificationBuilder builder = new NotificationBuilder(options,context,OPTIONS,
     			DeleteIntentReceiver.class,ReceiverActivity.class);
 
@@ -80,7 +93,40 @@ public class Receiver extends BroadcastReceiver {
         	LocalNotification.fireEvent("updateCall", options.getId(), options.getJSON(),data);
             nWrapper.schedule(options.moveDate());
         }
-        if (!LocalNotification.isInBackground && options.getForegroundMode()){
+        Log.v(TAG, "launch= " + launchScreen);
+        if (launchScreen) {
+            PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
+            WakeLock wakeLock = pm.newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP), "TAG");
+            wakeLock.acquire();
+            
+            KeyguardManager keyguardManager = (KeyguardManager)context.getSystemService(Context.KEYGUARD_SERVICE); 
+            KeyguardLock keyguardLock =  keyguardManager.newKeyguardLock("TAG");
+            keyguardLock.disableKeyguard();
+            
+            Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            long[] pattern = {1000, 2000, 1000, 2000};
+            v.vibrate(pattern, 0);
+            
+            try {
+                Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+                mMediaPlayer = new MediaPlayer();
+                mMediaPlayer.setDataSource(context, alarmSound);
+                final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                if (audioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {
+                    mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+                    mMediaPlayer.setLooping(true);
+                    mMediaPlayer.prepare();
+                    mMediaPlayer.start();
+                }
+             } catch (Exception e) {
+                 e.printStackTrace();
+             }
+            intent = new Intent();
+            intent.setAction("de.appplant.cordova.plugin.localnotification.ALARM");
+            intent.setPackage(context.getPackageName());
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        } else if (!LocalNotification.isInBackground && options.getForegroundMode()){
         	if (options.getInterval() == 0) {
         		LocalNotification.unpersist(options.getId());
         	}

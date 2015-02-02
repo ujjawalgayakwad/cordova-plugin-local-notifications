@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import de.appplant.cordova.plugin.notification.*;
+import de.appplant.cordova.plugin.notification.Options;
 
 public class ReceiverActivity extends Activity {
 

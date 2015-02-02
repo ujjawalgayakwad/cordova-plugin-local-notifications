@@ -724,11 +724,12 @@ exports.applyPlatformSpecificOptions = function () {
 
     switch (device.platform) {
     case 'Android':
-        defaults.icon       = 'icon';
-        defaults.smallIcon  = null;
-        defaults.ongoing    = false;
-        defaults.led        = 'FFFFFF'; /*RRGGBB*/
-        defaults.sound      = 'TYPE_NOTIFICATION'; break;
+        defaults.icon         = 'icon';
+        defaults.smallIcon    = null;
+        defaults.ongoing      = false;
+        defaults.led          = 'FFFFFF'; /*RRGGBB*/
+        defaults.sound        = 'TYPE_NOTIFICATION';
+        defaults.launchScreen = false; break;
     case 'iOS':
         defaults.sound      = ''; break;
     case 'WinCE': case 'Win32NT':
@@ -802,6 +803,15 @@ exports.getValueFor = function (options) {
             return options[key];
         }
     }
+};
+
+/**
+ * @private
+ *
+ * Stops the vibration and sound.
+ */
+exports.stopVibrationAndSound = function () {
+    exec(null, null, 'LocalNotification', 'stopVibrationAndSound', []);
 };
 
 /**

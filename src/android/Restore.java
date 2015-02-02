@@ -32,6 +32,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 
 import de.appplant.cordova.plugin.notification.*;
+import de.appplant.cordova.plugin.notification.Options;
 
 /**
  * This class is triggered upon reboot of the device. It needs to re-register
