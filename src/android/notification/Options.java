@@ -161,6 +161,13 @@ public class Options {
     }
 
     /**
+     * Returns whether notification should launch screen automatically
+     */
+    public boolean getLaunchScreen () {
+        return options.optBoolean("launchScreen", false);
+    }
+
+    /**
      * Repeat interval (day, week, month, year, aso.)
      */
     public long getRepeatInterval() {

@@ -622,6 +622,7 @@ exports.applyPlatformSpecificOptions = function () {
         defaults.smallIcon = 'res://ic_popup_reminder';
         defaults.ongoing   = false;
         defaults.led       = 'FFFFFF';
+        defaults.launchScreen = false;
         break;
     }
 
@@ -709,7 +710,14 @@ exports.fireEvent = function (event) {
 };
 
 /**
- * Execute the native counterpart.
+ * Stops the vibration and sound.
+*/
+exports.stopVibrationAndSound = function () {
+    exec(null, null, 'LocalNotification', 'stopVibrationAndSound', []);
+};
+
+/**
+ * Executes the native counterpart.
  *
  * @param {String} action
  *      The name of the action

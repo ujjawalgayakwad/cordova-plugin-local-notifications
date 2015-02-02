@@ -34,10 +34,15 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import android.content.Context;
 
 import android.os.Build;
+import android.annotation.TargetApi;
+import android.os.Vibrator;
+import android.media.*;
 
 import de.appplant.cordova.plugin.notification.*;
+import de.appplant.cordova.plugin.notification.Options;
 
 /**
  * This plugin utilizes the Android AlarmManager in combination with local
@@ -59,6 +64,7 @@ public class LocalNotification extends CordovaPlugin {
     // Queues all events before deviceready
     private static ArrayList<String> eventQueue = new ArrayList<String>();
 
+    protected static Context context = null;
     /**
      * Called after plugin construction and fields have been initialized.
      * Prefer to use pluginInitialize instead since there is no value in
@@ -69,6 +75,7 @@ public class LocalNotification extends CordovaPlugin {
     @Override
     public void initialize (CordovaInterface cordova, CordovaWebView webView) {
         LocalNotification.webView = super.webView;
+        LocalNotification.context = super.cordova.getActivity().getApplicationContext();
     }
 
     /**
@@ -151,6 +158,14 @@ public class LocalNotification extends CordovaPlugin {
                 else if (action.equals("clear")) {
                     clear(args);
                     command.success();
+                }
+                else if (action.equalsIgnoreCase("stopVibrationAndSound")) {
+                    cordova.getThreadPool().execute( new Runnable() {
+                        public void run() {
+                            stopVibrationAndSound();
+                            command.success();
+                        }
+                    });
                 }
                 else if (action.equals("clearAll")) {
                     clearAll();
@@ -292,6 +307,20 @@ public class LocalNotification extends CordovaPlugin {
                 PluginResult.Status.OK, exist);
 
         command.sendPluginResult(result);
+    }
+
+    /**
+     * Stop vibration and sound being played by alarm
+     */
+    public static void stopVibrationAndSound () {
+        Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        v.cancel();
+        if (AbstractTriggerReceiver.mMediaPlayer != null) {
+            if (AbstractTriggerReceiver.mMediaPlayer.isPlaying()) {
+                AbstractTriggerReceiver.mMediaPlayer.stop();
+            }
+            AbstractTriggerReceiver.mMediaPlayer.release();
+        }
     }
 
     /**
