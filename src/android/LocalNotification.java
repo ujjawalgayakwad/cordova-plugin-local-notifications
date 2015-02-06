@@ -219,7 +219,6 @@ public class LocalNotification extends CordovaPlugin {
 
             Notification notification =
                     getNotificationMgr().schedule(options, TriggerReceiver.class);
-
             fireEvent("schedule", notification);
         }
     }
@@ -316,10 +315,12 @@ public class LocalNotification extends CordovaPlugin {
         Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         v.cancel();
         if (AbstractTriggerReceiver.mMediaPlayer != null) {
-            if (AbstractTriggerReceiver.mMediaPlayer.isPlaying()) {
-                AbstractTriggerReceiver.mMediaPlayer.stop();
-            }
-            AbstractTriggerReceiver.mMediaPlayer.release();
+            try {
+                if (AbstractTriggerReceiver.mMediaPlayer.isPlaying()) {
+                    AbstractTriggerReceiver.mMediaPlayer.stop();
+                }
+                AbstractTriggerReceiver.mMediaPlayer.release();
+            } catch (IllegalStateException e) { }
         }
     }
 
@@ -561,5 +562,4 @@ public class LocalNotification extends CordovaPlugin {
     private Manager getNotificationMgr() {
         return Manager.getInstance(cordova.getActivity());
     }
-
 }
