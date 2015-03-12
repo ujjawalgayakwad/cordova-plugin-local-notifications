@@ -365,4 +365,10 @@ public class Notification {
         defaultReceiver = receiver;
     }
 
+    /**
+     * If it's a repeating notification.
+     */
+    public boolean launchScreen () {
+        return getOptions().getLaunchScreen();
+    }
 }

@@ -43,6 +43,7 @@ import android.media.*;
 
 import de.appplant.cordova.plugin.notification.*;
 import de.appplant.cordova.plugin.notification.Options;
+import de.appplant.cordova.plugin.notification.TriggerReceiver;
 
 /**
  * This plugin utilizes the Android AlarmManager in combination with local
@@ -314,12 +315,12 @@ public class LocalNotification extends CordovaPlugin {
     public static void stopVibrationAndSound () {
         Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         v.cancel();
-        if (AbstractTriggerReceiver.mMediaPlayer != null) {
+        if (TriggerReceiver.mMediaPlayer != null) {
             try {
-                if (AbstractTriggerReceiver.mMediaPlayer.isPlaying()) {
-                    AbstractTriggerReceiver.mMediaPlayer.stop();
+                if (TriggerReceiver.mMediaPlayer.isPlaying()) {
+                    TriggerReceiver.mMediaPlayer.stop();
                 }
-                AbstractTriggerReceiver.mMediaPlayer.release();
+                TriggerReceiver.mMediaPlayer.release();
             } catch (IllegalStateException e) { }
         }
     }

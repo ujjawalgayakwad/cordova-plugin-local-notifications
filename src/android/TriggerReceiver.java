@@ -23,6 +23,8 @@
 
 package de.appplant.cordova.plugin.localnotification;
 
+import android.content.Context;
+import android.content.Intent;
 import de.appplant.cordova.plugin.notification.*;
 
 /**
@@ -43,8 +45,8 @@ public class TriggerReceiver extends de.appplant.cordova.plugin.notification.Tri
      *      If an update has triggered or the original
      */
     @Override
-    public void onTrigger (Notification notification, boolean updated) {
-        super.onTrigger(notification, updated);
+    public void onTrigger (Notification notification, boolean updated, Context context, Intent intent) {
+        super.onTrigger(notification, updated, context, intent);
 
         if (!updated) {
             LocalNotification.fireEvent("trigger", notification);

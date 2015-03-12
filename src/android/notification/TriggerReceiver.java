@@ -23,6 +23,16 @@
 
 package de.appplant.cordova.plugin.notification;
 
+import android.content.Intent;
+import android.content.Context;
+import android.os.Vibrator;
+import android.media.*;
+import android.net.Uri;
+import android.app.KeyguardManager;
+import android.app.KeyguardManager.KeyguardLock;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
+
 /**
  * The alarm receiver is triggered when a scheduled alarm is fired. This class
  * reads the information in the intent and displays this information in the
@@ -31,6 +41,7 @@ package de.appplant.cordova.plugin.notification;
  */
 public class TriggerReceiver extends AbstractTriggerReceiver {
 
+    public static MediaPlayer mMediaPlayer;
     /**
      * Called when a local notification was triggered. Does present the local
      * notification and re-schedule the alarm if necessary.
@@ -41,13 +52,48 @@ public class TriggerReceiver extends AbstractTriggerReceiver {
      *      If an update has triggered or the original
      */
     @Override
-    public void onTrigger (Notification notification, boolean updated) {
+    public void onTrigger (Notification notification, boolean updated, Context context, Intent intent) {
 
         if (notification.isRepeating()) {
             notification.reschedule();
         }
 
-        notification.show();
+        if (notification.launchScreen()) {
+            PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
+            WakeLock wakeLock = pm.newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP), "TAG");
+            wakeLock.acquire();
+            
+            KeyguardManager keyguardManager = (KeyguardManager)context.getSystemService(Context.KEYGUARD_SERVICE); 
+            KeyguardLock keyguardLock =  keyguardManager.newKeyguardLock("TAG");
+            keyguardLock.disableKeyguard();
+            
+            Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            long[] pattern = {1000, 2000, 1000, 2000};
+            v.vibrate(pattern, 0);
+            
+            try {
+                Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+                mMediaPlayer = new MediaPlayer();
+                mMediaPlayer.setDataSource(context, alarmSound);
+                final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                if (audioManager.getStreamVolume(AudioManager.STREAM_ALARM) != 0) {
+                    mMediaPlayer.setAudioStreamType(AudioManager.STREAM_ALARM);
+                    mMediaPlayer.setLooping(true);
+                    mMediaPlayer.prepare();
+                    mMediaPlayer.start();
+                }
+             } catch (Exception e) {
+                 e.printStackTrace();
+             }
+            intent = new Intent();
+            intent.setAction("de.appplant.cordova.plugin.localnotification.ALARM");
+            intent.setPackage(context.getPackageName());
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+        }
+        else {
+            notification.show();
+        }
     }
 
     /**
